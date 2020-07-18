@@ -41,6 +41,7 @@
                     </form>
                 </div>
                 <div class="col-xs-6">
+                    <!-- article_release.html -->
                     <a href="article_release.html" class="btn btn-success btn-sm pull-right" id="release_btn">发表文章</a>
                 </div>
             </div>
@@ -101,7 +102,7 @@
 
 <script>
     /* 1.加载文章类别下拉菜单数据 */
-    // 一加載就觸發 篩選
+    
     // $('#btnSearch').click();
     $.ajax({
         type: "get",
@@ -137,8 +138,20 @@
         });
     });
 
+    // 3.一加載就觸發 篩選
     $('#btnSearch').click();
 
+
+    // 4.点击发表文章跳转,左侧栏文章发表高亮
+    // a 标签要跳转也要高亮,只能给dom注册
+    $('.pull-right').click(function (e) { 
+        // e.preventDefault();
+        // console.log($('window.parent.document.body').find('.pull-right'));
+        // console.log(window.parent.document.querySelector('.sendArt'));//也可以找到
+
+        $('.level02>li:eq(1)',window.parent.document).addClass('active').siblings().removeClass('active');
+    });
+    
 </script>
 
 </html>
