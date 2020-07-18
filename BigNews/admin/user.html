@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="css/iconfont.css">
     <link rel="stylesheet" href="css/main.css">
     <script src="./libs/jquery-1.12.4.min.js"></script>
+    <script src="./libs/http.js"></script>
 
 </head>
 
@@ -69,5 +70,65 @@
         </div>
     </div>
 </body>
+<script>
+    // 1.页面加载 发送ajax数据 渲染页面
+    // let fd = new FormData();
+    // **注意:ajax发送的时候,都已经设置了beforeSend方法,每次请求都已经有了token
+    $.ajax({
+        type: "get",
+        url: BigNews.user_detail,
+        // data: fd,
+        dataType: "json",
+        success: function (response) {
+            // console.log(response);
+            // 拿到数据,渲染页面
 
+
+            // 通过遍历对象来赋值
+            for (const key in response.data) { 
+                $('.' + key).val(response.data[key]) ;
+            };
+            // 头像属性单独设置
+            $('.user_pic').attr('src',response.data.userPic);
+        }
+    });
+
+    // 2.选择文件的时候.预览文件
+    $('#exampleInputFile').change(function () { 
+        // console.log(this); 
+        // console.log(this.files); 
+        // 2.1拿到文件
+        const file = this.files[0];
+
+        // 2.2 转URL
+        const url = URL.createObjectURL(file);
+        // 2.3 把url赋值给预览box
+        $('.user_pic').attr('src',url);
+        
+    });
+
+    // 3. 提交数据给服务器
+    // 注意点: 提交formdata格式文件时,ajax要阻止2个默认事件
+    $('.btn-edit').click(function (e) { 
+        e.preventDefault();
+        const fd = new FormData($('form')[0]);
+        $.ajax({
+        
+        type: "POST",
+        processData:false,
+        contentType: false,
+        dataType: "json",
+        url: BigNews.user_edit,
+        data: fd,
+        success: function (response) {
+            console.log(response);
+            if (response.code == 200) {
+                alert('修改成功');
+                window.parent.location.reload();
+            }
+        }
+    });
+    });
+
+</script>
 </html>
