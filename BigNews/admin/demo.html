@@ -1,30 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
 </head>
+
 <body>
   for each => Array
   <br>
   for in => Array,Object
   <br>
-  for of => Object 
+  for of => Object
   <script>
-    
-    let arr = ['a','b','c','123']
-    arr.forEach((value)=>console.log(value));
+
+    let arr = ['a', 'b', 'c', '123']
+    arr.forEach((value) => console.log(value));
     //依次打印 a b c 123
-    let arr1 = [1,2,3,4,5];
+    let arr1 = [1, 2, 3, 4, 5];
     let sum = 0;
-    arr1.forEach((value)=>{
-      return sum += value;    
+    arr1.forEach((value) => {
+      return sum += value;
     });
     console.log(sum);
 
 
-
+    // for in 用于遍历数组和对象
     let re = 0;
     for (const key in arr1) {
       re += arr1[key];
@@ -32,8 +34,60 @@
     console.log(re);
 
 
+    // 数组的高阶
+    // 1.map(),reduece() 2.filter() 3.every()方法可以判断数组的所有元素是否满足测试条件。 4.find()方法用于查找符合条件的第一个元素，如果找到了，返回这个元素，否则，返回undefined：
+    // 5.findIndex()和find()类似，也是查找符合条件的第一个元素，不同之处在于findIndex()会返回这个元素的索引，如果没有找到，返回-1
 
+    /* 2.fileter() 返回新数组,不改变原数组*/
+    let arr2 = [2, 4, 6, 8, 10];
+    console.log(arr2.filter(x => x > 5));
+    console.log(arr2);
+
+    // 找100以内的素数->只能被自己和1整除的数
+    let arr3 = [2, 3]
+    for (let i = 3; i < 100; i++) {
+      for (let j = 2; j < i / 2; j++) {
+        if (i % j == 0) {
+          break;
+        } else if (j == Math.floor(i / 2)) {
+          arr3[arr3.length] = i;
+          break;
+        }
+      }
+    }
+    console.log(arr3);
+
+    // z怎么比较两个数组中的值是否相等呢?
+    let arr4 = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
+
+    // 思路1:同时遍历两个数组,只要不同就不同
+    console.log((() => {
+
+      for (let i = 0; i < arr4.length; i++) {
+        if (arr3[i] != arr4[i]) {
+          return false;
+        }
+      }
+      return true;
+    })());
+
+
+
+    const getRandom = (min = 0, max = 100) => {
+      if (typeof min !== 'number' || typeof max !== 'number') {
+        throw new Error('Argument(s) is illegal !')
+      }
+      if (min > max) {
+        [min, max] = [max, min]
+      }
+      return Math.floor(Math.random() * (max - min + 1) + min)
+    }
+
+    // e.g.
+    console.log(getRandom('1', 100)); // 89
+    console.log(getRandom(1, 100)); // 5
 
   </script>
 </body>
+
 </html>

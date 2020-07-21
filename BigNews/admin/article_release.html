@@ -10,11 +10,14 @@
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/iconfont.css">
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="./libs/jedate/css/jeDate-test.css">
     <!-- jq -->
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <!-- 模板引擎 -->
     <script src="./libs/template-web.js"></script>
     <script src="./libs/http.js"></script>
+    <script src="./libs/jedate/js/jedate.js"></script>
+    
 </head>
 
 <body>
@@ -69,7 +72,37 @@
         </div>
     </div>
 </body>
+<script id="cat_list" type="text/html">
+    {{each data v}}
+        <option value="{{v.id}}">{{v.name}}</option>
+    {{/each}}
+</script>
+
+<script src="./libs/http.js"></script>
 <script>
-    // 文章发表按钮点击,左侧高亮
+    // 入口函数
+    $(function () {  
+        // 1.加载文章类别
+        $.ajax({
+            type: "get",
+            url: BigNews.category_list,
+            // data: {id:response.id},
+            dataType: "json",
+            success: function (response) {
+                
+                $('.category').html(template('cat_list',response));
+            }
+        });
+        // 2.选择文件,预览所选文件
+        $('#inputCover').change(function (e) { 
+            e.preventDefault();
+            const file = this.fils[0];
+            const url = URL.createObjectURL(file);
+            $('.article_cover').attr('src', url);
+            
+        });
+        // 3.发布时间插件
+        // 4.点击发布按钮或者存为草稿,发送ajax
+    })
 </script>
 </html>

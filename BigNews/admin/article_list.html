@@ -101,7 +101,9 @@
 </script>
 
 <script>
-    /* 1.加载文章类别下拉菜单数据 */
+    // 入口函数
+    $(function () {  
+        /* 1.加载文章类别下拉菜单数据 */
     
     // $('#btnSearch').click();
     $.ajax({
@@ -151,6 +153,9 @@
 
         $('.level02>li:eq(1)',window.parent.document).addClass('active').siblings().removeClass('active');
     });
+
+    // 5.删除文章
+})
     
 </script>
 
