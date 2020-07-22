@@ -11,13 +11,15 @@
     <link rel="stylesheet" href="css/iconfont.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="./libs/jedate/css/jeDate-test.css">
+    <link rel="stylesheet" href="./libs/jedate/css/jedate.css">
     <!-- jq -->
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <!-- 模板引擎 -->
     <script src="./libs/template-web.js"></script>
     <script src="./libs/http.js"></script>
     <script src="./libs/jedate/js/jedate.js"></script>
-    
+    <script src="./libs/wangEditor.min.js"></script>
+
 </head>
 
 <body>
@@ -55,12 +57,17 @@
                 <div class="form-group">
                     <label class="col-sm-2 control-label">发布时间：</label>
                     <div class="col-sm-4">
+                        <div class="jeinpbox">
+                            <input type="text" class="jeinput" id="testico" placeholder="YYYY-MM-DD">
+                            <div class="icons jebtns" onclick="mydate()"></div>
+                        </div>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">文章内容：</label>
-                    <div class="col-sm-10">
-                    </div>
+                    <!-- 富文本框 -->
+                    <!-- wangEditor -->
+                    <div id="editor" class="col-sm-10"></div>
                 </div>
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
@@ -80,8 +87,28 @@
 
 <script src="./libs/http.js"></script>
 <script>
+    // (1) 日期插件
+    function mydate() {
+            jeDate('#testico',
+                {
+                    trigger: false,
+                    format: 'YYYY-MM-DD',
+                    theme: { bgcolor: "#00A1CB", color: "#ffffff", pnColor: "#00CCFF" },
+                    zIndex: 10099,
+                })
+        }
     // 入口函数
-    $(function () {  
+    $(function () {
+
+        // 一:加入日期插件和文本编辑插件
+        // (1) 日期插件
+        //蓝色主题色
+        
+        // (2) 加入编辑文本
+        var E = window.wangEditor;
+        var editor = new E('#editor');
+        editor.create();
+
         // 1.加载文章类别
         $.ajax({
             type: "get",
@@ -89,20 +116,58 @@
             // data: {id:response.id},
             dataType: "json",
             success: function (response) {
-                
-                $('.category').html(template('cat_list',response));
+
+                $('.category').html(template('cat_list', response));
             }
         });
         // 2.选择文件,预览所选文件
-        $('#inputCover').change(function (e) { 
+        $('#inputCover').change(function (e) {
             e.preventDefault();
             const file = this.fils[0];
             const url = URL.createObjectURL(file);
             $('.article_cover').attr('src', url);
-            
+
         });
         // 3.发布时间插件
         // 4.点击发布按钮或者存为草稿,发送ajax
+        $('.btn-release,.btn-draft').click(function (e) { 
+            // (1)获取文章状态,若为发布则为发布ajax,反之亦然
+            let state = $(this).hasClass('btn-release') ? '已发布' : '草稿';
+            // (2)禁用表单默认事件
+            e.preventDefault();
+
+            // (3)创建formdata对象,参数是表单dom对象
+            // 因为文章发布参数有7个,form中带name的只有4个,还呀追加
+            // form对象传入的要是dom对象
+             let fd = new FormData($('form')[0]);
+
+             fd.append('date',$('#testico').val());
+            //  注意:富文本框的text值有自己的语法获取
+             fd.append('content',editor.txt.html());
+             fd.append('state',state);
+
+            //  发送发表文章的ajax
+            $.ajax({
+                type: "post",
+                url: BigNews.article_publish,
+                data: fd,
+                // 注意:发送formdata的时候一定要禁用默认值
+                processData:false,
+                contentType:false,
+                dataType: "json",
+                success: function (response) {
+                    console.log(response);
+                    if (response.code == 200) {
+                        alert(response.msg);
+                        // window.location.href = './article_release.html'
+                        window.location.href = './article_list.html';        
+                    }
+                }
+            });
+
+            
+        });
     })
 </script>
+
 </html>
