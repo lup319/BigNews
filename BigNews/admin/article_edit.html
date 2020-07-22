@@ -12,8 +12,14 @@
     <link rel="stylesheet" href="css/main.css">
     <!-- jq -->
     <script src="./libs/jquery-1.12.4.min.js"></script>
+    <script src="./libs/http.js"></script>
     <!-- 模板引擎 -->
     <script src="./libs/template-web.js"></script>
+    <!-- 导包(日期插件,富文本) -->
+    <link rel="stylesheet" href="./libs/jedate/css/jeDate-test.css">
+    <link rel="stylesheet" href="./libs/jedate/css/jeDate.css">
+    <script src="./libs/jedate/js/jedate.js"></script>
+    <script src="./libs/wangEditor.min.js"></script>
 </head>
 
 <body>
@@ -51,12 +57,18 @@
                 <div class="form-group">
                     <label class="col-sm-2 control-label">发布时间：</label>
                     <div class="col-sm-4">
+                        <div class="jeinpbox">
+                            <input type="text" class="jeinput" id="testico" placeholder="YYYY-MM-DD">
+                            <div class="icons jebtns" onclick="mydate()"></div>
+                        </div>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">文章内容：</label>
-                    <div class="col-sm-10">
-                    </div>
+ 
+                        <!-- wangEditor -->
+                    <div id="editor" class="col-sm-10"></div>
+                    
                 </div>
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
@@ -68,5 +80,125 @@
         </div>
     </div>
 </body>
+    <!-- 文章分类模板 -->
+    <script id="cat_list" type="text/html">
+        {{ each data v }}
+        <option value="{{ v.id }}">{{ v.name }}</option>
+        {{ /each }}
+    </script>
+<script>
+    /* 完成文章编辑功能 */
+    // 1.ajax加载文章的标题,cover,内容
+    // 2.点击编辑btn完成ajax
+    // 3.加载插件
+
+    // (1) 日期插件
+    function mydate() {
+            jeDate('#testico',
+                {
+                    trigger: false,
+                    format: 'YYYY-MM-DD',
+                    theme: { bgcolor: "#00A1CB", color: "#ffffff", pnColor: "#00CCFF" },
+                    zIndex: 10099,
+                })
+        }
+    
+
+
+    // 入口函数
+    $(function () {
+        // (2) 加入编辑文本
+        var E = window.wangEditor;
+        var editor = new E('#editor');
+        editor.create();
+
+    // 1.获取从article_list页面传递过来的文章id
+    // **********************************
+    // 编辑文章要拿到该文章的ID，该ID是怎么传过来的呢？是通过在模板的连接中加入
+        const id = window.location.href.split('=')[1];
+        console.log(id);
+
+        // 2.加载文章所有分类
+        $.ajax({
+            type: "get",
+            url: BigNews.category_list,
+            // data: {id:response.id},
+            dataType: "json",
+            success: function (response) {
+
+                $('.category').html(template('cat_list', response));
+            }
+        });
+
+        // 3.ajax请求文章详细信息 （渲染整个页面）
+
+        $.ajax({
+            type: "get",
+            url: BigNews.article_search,
+            data: { id:id },
+            dataType: "json",
+            success: function (response) {
+                console.log(response); 
+                //  渲染对应页面
+
+                $('#inputTitle').val(response.data.title);
+                $('.article_cover').attr('src', response.data.cover);
+                $('.category').val(response.data.categoryId);
+                $('#testico').val(response.data.date);
+                editor.txt.html(response.data.content);
+            }
+        });
+
+        // 4.文件预览
+        // 4.1给file注册onchange事件
+        $('#inputCover').change(function (e) {
+            e.preventDefault();
+            const file = this.files[0];
+            const url = URL.createObjectURL(file);
+            $('.article_cover').attr('src', url);
+
+        });
+
+        // 5.文章上传(分为修改或者存为草稿),是同一个ajax吗?
+
+        $('.btn-edit,.btn-draft').click(function (e) { 
+            e.preventDefault();
+
+            //对点击的按钮不同判断状态为修改还是存草稿
+            const state = $(this).hasClass('.btn-edit') ? '已发布' : '草稿';
+            console.log(state);
+
+            // 创建formdata对象,对参数进行追加
+            let fd = new FormData($('form')[0]);
+
+            fd.append('id',id);
+            fd.append('date',$('#testico').val());
+            //  注意:富文本框的text值有自己的语法获取
+             fd.append('content',editor.txt.html());
+             fd.append('state',state);
+
+
+            $.ajax({
+            type: "post",
+            url: BigNews.article_edit,
+            data: fd,
+            dataType: "json",
+            processData:false,
+            contentType:false,
+            success: function (response) {
+                console.log(response);
+                if (response.code == 200) {
+                    alert('编辑成功');
+                    //返回文章列表页
+                    location.href = './article_list.html';
+                    // window.history.back();//回退不会刷新
+                }
+            }
+        });
+
+            
+        });
+    })
+    </script>
 
 </html>
